@@ -2,8 +2,8 @@ import express from "express";
 import db from "../db/index.js";
 import { usersTable } from "../models/user.model.js";
 import { createUserSchema } from "../validations/request.validation.js";
-import { randomBytes, createHmac } from "node:crypto";
 import { eq } from "drizzle-orm";
+import { hashPassword } from "../utils/hash.js";
 
 const router = express.Router();
 
@@ -26,10 +26,7 @@ router.post("/signup", async (req, res) => {
   }
 
   // create hash of password with salt
-  const salt = randomBytes(256).toString("hex");
-  const hashedPassword = createHmac("sha256", salt)
-    .update(password)
-    .digest("hex");
+  const { salt, hashedPassword } = hashPassword(password);
 
   // insert user into database
   const [user] = await db
