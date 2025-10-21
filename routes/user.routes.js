@@ -2,8 +2,8 @@ import express from "express";
 import db from "../db/index.js";
 import { usersTable } from "../models/user.model.js";
 import { createUserSchema } from "../validations/request.validation.js";
-import { eq } from "drizzle-orm";
 import { hashPassword } from "../utils/hash.js";
+import { findUserByEmail } from "../services/user.service.js";
 
 const router = express.Router();
 
@@ -17,10 +17,7 @@ router.post("/signup", async (req, res) => {
   const { firstName, lastName, email, password } = validationResult.data;
 
   // check if user already exists
-  const [existingUser] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.email, email));
+  const existingUser = await findUserByEmail(email);
   if (existingUser) {
     return res.status(400).json({ error: "User already exists" });
   }
